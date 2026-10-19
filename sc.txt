@@ -1,0 +1,160 @@
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Переключение видимости пароля
+            const togglePassword = document.getElementById('togglePassword');
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const passwordField = document.getElementById('password');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordField.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            // Валидация формы
+            const form = document.getElementById('registrationForm');
+            const successMessage = document.getElementById('successMessage');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Сброс ошибок
+                resetErrors();
+                
+                // Получение значений полей
+                const fullName = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const termsChecked = document.getElementById('terms').checked;
+                
+                let isValid = true;
+                
+                // Валидация имени
+                if (fullName.length < 2) {
+                    showError('nameError');
+                    isValid = false;
+                }
+                
+                // Валидация email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showError('emailError');
+                    isValid = false;
+                }
+                
+                // Валидация телефона
+                const phoneRegex = /^[\+]?[1-9][\d\-\(\)\.]{9,15}$/;
+                if (!phoneRegex.test(phone.replace(/[\s\(\)-]/g, ''))) {
+                    showError('phoneError');
+                    isValid = false;
+                }
+                
+                // Валидация пароля
+                if (password.length < 8) {
+                    showError('passwordError');
+                    isValid = false;
+                }
+                
+                // Проверка совпадения паролей
+                if (password !== confirmPassword) {
+                    showError('confirmPasswordError');
+                    isValid = false;
+                }
+                
+                // Проверка принятия условий
+                if (!termsChecked) {
+                    showError('termsError');
+                    isValid = false;
+                }
+                
+                // Если форма валидна, показываем сообщение об успехе
+                if (isValid) {
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    
+                    // Скрываем сообщение через 5 секунд
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+                }
+            });
+            
+            // Функция показа ошибки
+            function showError(errorId) {
+                document.getElementById(errorId).style.display = 'block';
+            }
+            
+            // Функция сброса ошибок
+            function resetErrors() {
+                const errorElements = document.querySelectorAll('.error-message');
+                errorElements.forEach(element => {
+                    element.style.display = 'none';
+                });
+                successMessage.style.display = 'none';
+            }
+            
+            // Валидация в реальном времени для полей
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+            });
+            
+            function validateField(field) {
+                const fieldId = field.id;
+                const value = field.value.trim();
+                
+                // Сбрасываем ошибку для поля
+                document.getElementById(`${fieldId}Error`).style.display = 'none';
+                
+                // Валидация в зависимости от поля
+                switch(fieldId) {
+                    case 'fullName':
+                        if (value.length < 2) {
+                            showError('nameError');
+                        }
+                        break;
+                    case 'email':
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(value)) {
+                            showError('emailError');
+                        }
+                        break;
+                    case 'phone':
+                        const phoneRegex = /^[\+]?[1-9][\d\-\(\)\.]{9,15}$/;
+                        if (value && !phoneRegex.test(value.replace(/[\s\(\)-]/g, ''))) {
+                            showError('phoneError');
+                        }
+                        break;
+                    case 'password':
+                        if (value.length < 8) {
+                            showError('passwordError');
+                        }
+                        // Проверка совпадения паролей, если поле подтверждения не пустое
+                        const confirmPassword = document.getElementById('confirmPassword').value;
+                        if (confirmPassword && value !== confirmPassword) {
+                            showError('confirmPasswordError');
+                        }
+                        break;
+                    case 'confirmPassword':
+                        const passwordValue = document.getElementById('password').value;
+                        if (value !== passwordValue) {
+                            showError('confirmPasswordError');
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
